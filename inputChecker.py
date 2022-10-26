@@ -63,51 +63,62 @@ def driveCheckerSetup(dbName):
     if platform == 'win32':
         driveEject = windowsDriveEject
         listDrives = listWindowsDrives
-        drives = listDrives()
-        for drive in drives:
-            if drive.drive_type == 'Removable Disk':
-                if dbOperations.findDrive(conn,drive.letter):
-                    if os.path.exists(f"{drive.letter}\\driveAuth.txt") is False:
-                        if dbOperations.adminAuth(conn,input("Auth File does not exist. Please enter the password to create your auth: ")):
-                            with open(f"{drive.letter}\\driveAuth.txt","w+") as driveAuth:
-                                driveAuth.write(dbOperations.getAuthKey(conn,drive.letter))
-                            print("Password correct! Auth Created! Re-insert flash drive to run again")
-                        else:
-                            print("Password invalid. Re-insert flash drive and try again")
-                    else:
-                        with open(f"{drive.letter}\\driveAuth.txt","r") as driveAuth:
-                            if dbOperations.authenticateDrive(conn,drive.letter,driveAuth.readlines()[0]):
-                                print("Drive authenticated! Beginning drive processes:")
-                                os.chdir(f"{drive.letter}\\")
-                                with open(f"{drive.letter}\\processes.txt","r") as executor:
-                                    for line in executor.readlines():
-                                        os.system(line)
-                                print("All processes successfully run!")
-                            elif dbOperations.adminAuth(conn,input("Auth is invalid. Please enter the password to recover your auth: ")):
-                                with open(f"{drive.letter}\\driveAuth.txt","w+") as driveAuth:
-                                    driveAuth.write(dbOperations.getAuthKey(conn,drive.letter))
-                                print("Password correct! Re-insert flash drive to run again")
-                            else:
-                                print("Password invalid. Re-insert flash drive and try again")
-                else:
-                    if dbOperations.adminAuth(conn,input("Drive not found. Please enter the password to create your auth: ")):
-                        dbOperations.insertDrive(conn,drive.letter)
-                        print("Password correct! Drive and auth added to database!")
+        driveCheckerLoop(conn,cur_dir,listDrives,driveEject)
+        
+def driveCheckerLoop(conn,cur_dir,listDrives,driveEject):
+    drives = listDrives()
+    oldDriveCount = len(drives)
+    newDriveCount = oldDriveCount
+    while(True):
+        while newDriveCount <= oldDriveCount:
+            drives = listDrives()
+            oldDriveCount = newDriveCount
+            newDriveCount = len(drives)
+        driveCheckerHalt(conn,drives,cur_dir,driveEject)
+        oldDriveCount = newDriveCount
+
+
+def driveCheckerHalt(conn,drives,cur_dir,driveEject):
+    for drive in drives:
+        if drive.drive_type == 'Removable Disk':
+            if dbOperations.findDrive(conn,drive.letter):
+                if os.path.exists(f"{drive.letter}\\driveAuth.txt") is False:
+                    if dbOperations.adminAuth(conn,input("Auth File does not exist. Please enter the password to create your auth: ")):
                         with open(f"{drive.letter}\\driveAuth.txt","w+") as driveAuth:
-                            driveAuth.write(dbOperations.createAuthKey(drive.letter))
-                        print("Auth added to Drive! Re-insert flash drive to run again")
+                            driveAuth.write(dbOperations.getAuthKey(conn,drive.letter))
+                        print("Password correct! Auth Created! Re-insert flash drive to run again")
                     else:
                         print("Password invalid. Re-insert flash drive and try again")
-                driveEject(drive.letter)
-                print(f"Drive {drive.letter} successfully ejected!")
-        conn.commit()
-        drives = listDrives()
-        return drives
-        
-#def driveCheckerLoop(conn):
+                else:
+                    with open(f"{drive.letter}\\driveAuth.txt","r") as driveAuth:
+                        if dbOperations.authenticateDrive(conn,drive.letter,driveAuth.readlines()[0]):
+                            print("Drive authenticated! Beginning drive processes:")
+                            os.chdir(f"{drive.letter}\\")
+                            with open(f"{drive.letter}\\processes.txt","r") as executor:
+                                for line in executor.readlines():
+                                    os.system(line)
+                            print("All processes successfully run!")
+                            os.chdir(f"{cur_dir}")
+                        elif dbOperations.adminAuth(conn,input("Auth is invalid. Please enter the password to recover your auth: ")):
+                            with open(f"{drive.letter}\\driveAuth.txt","w+") as driveAuth:
+                                driveAuth.write(dbOperations.getAuthKey(conn,drive.letter))
+                            print("Password correct! Re-insert flash drive to run again")
+                        else:
+                            print("Password invalid. Re-insert flash drive and try again")
+            else:
+                if dbOperations.adminAuth(conn,input("Drive not found. Please enter the password to create your auth: ")):
+                    dbOperations.insertDrive(conn,drive.letter)
+                    print("Password correct! Drive and auth added to database!")
+                    with open(f"{drive.letter}\\driveAuth.txt","w+") as driveAuth:
+                        driveAuth.write(dbOperations.createAuthKey(drive.letter))
+                    print("Auth added to Drive! Re-insert flash drive to run again")
+                else:
+                    print("Password invalid. Re-insert flash drive and try again")
+            driveEject(drive.letter)
+            print(f"Drive {drive.letter} successfully ejected!")
+    conn.commit()
 
 if __name__ == '__main__':
     disk = "D:"
     dbName = "sql.db"
-    drives = driveCheckerSetup(dbName)
-    print(drives)
+    driveCheckerSetup(dbName)
