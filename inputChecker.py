@@ -107,10 +107,10 @@ def linuxGetProcessList(driveAddr, linuxPassword):
     return [p for p in proc.split('\n') if len(p) > 0]
 
 def windowsChangeDir(driveAddr,linuxPassword):
-    os.chdir(f"{driveAddr[:-1]}")
+    os.chdir(f"{driveAddr}")
 
 def linuxChangeDir(driveAddr,linuxPassword):
-    command = f'cd {driveAddr[:-1]}'
+    command = f'cd {driveAddr}'
     subprocess.run(command, shell=True)
 
 def windowsRunProcess(process,driveAddr,linuxPassword):
@@ -180,15 +180,13 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFi
                 driveAuth = readAuth(driveAddr,linuxPassword)
                 if dbOperations.authenticateDrive(conn,drive,driveAuth):
                     print("Drive authenticated! Beginning drive processes:")
-                    if platform == "win32":
-                        changeDir(driveAddr,linuxPassword)
+                    changeDir(driveAddr,linuxPassword)
                     processes = getProcessList(driveAddr,linuxPassword)
                     for process in processes:
                         print(process)
                         runProcess(process,driveAddr,linuxPassword)
                     print("All processes successfully run!")
-                    if platform == "win32":
-                        changeDir(cur_dir,linuxPassword)
+                    changeDir(cur_dir,linuxPassword)
                 elif dbOperations.adminAuth(conn,input("Auth is invalid. Please enter the password to recover your auth: ")):
                     writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
                     print("Password correct! Re-insert flash drive to run again")
