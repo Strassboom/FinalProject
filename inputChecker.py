@@ -58,7 +58,7 @@ def windowsDriveEject(driveName):
     os.system(f'powershell (New-Object -comObject Shell.Application).Namespace(17).ParseName("""{driveName}""").InvokeVerb("""Eject""")')
 
 def driveCheckerSetup(dbName):
-    cursor = dbOperations.initDB(dbName);
+    cursor = dbOperations.initDB(dbName)
     if platform == 'win32':
         driveEject = windowsDriveEject
         listDrives = listWindowsDrives
@@ -66,7 +66,8 @@ def driveCheckerSetup(dbName):
         for drive in drives:
             if drive.drive_type == 'Removable Disk':
                 if dbOperations.findDrive(drive.letter):
-                    dbOperations.authenticateDrive(cursor,drive.letter)
+                    if dbOperations.authenticateDrive(cursor,drive.letter):
+                        continue
                 driveEject(drive.letter)
         return drives
         
