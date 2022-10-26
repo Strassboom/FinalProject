@@ -4,6 +4,8 @@ import json
 from sys import platform
 from dataclasses import dataclass
 from typing import Callable, List
+from time import sleep
+import dbOperations
 
 @dataclass
 class Drive:
@@ -15,7 +17,7 @@ class Drive:
     def is_removable(self):
         return self.drive_type == 'Removable Disk'
 
-def list_windows_drives() -> List[Drive]:
+def listWindowsDrives() -> List[Drive]:
     """
     Get a list of drives using WMI
     :return: list of drives
@@ -52,24 +54,24 @@ def list_windows_drives() -> List[Drive]:
         drive_type=drive_types[d['drivetype']]
     ) for d in devices]
 
-def driveEject(id):
-    eject_args = [
-                'powershell',
-                '$driveEject = New-Object',
-                '-comObject'
+def windowsDriveEject(driveName):
+    os.system(f'powershell (New-Object -comObject Shell.Application).Namespace(17).ParseName("""{driveName}""").InvokeVerb("""Eject""")')
 
-    ]
-
-    os.system('powershell $driveEject = New-Object -comObject Shell.Application; $driveEject.Namespace(17).ParseName("""D:""").InvokeVerb("""Eject""")')
-
-def driveCheckerSetup():
+def driveCheckerSetup(dbName):
+    cursor = dbOperations.initDB(dbName);
     if platform == 'win32':
-        driveEject("D")
-        #list_windows_drives()
+        driveEject = windowsDriveEject
+        listDrives = listWindowsDrives
+        drives = listDrives()
+        for drive in drives:
+            if drive.drive_type == 'Removable Disk':
+                if dbOperations.findDrive(drive.letter):
+                    dbOperations.authenticateDrive(cursor,drive.letter)
+                driveEject(drive.letter)
+        return drives
+        
 
 if __name__ == '__main__':
-    # os.system('powershell $driveEject = New-Object -comObject Shell.Application; $driveEject.Namespace(17).ParseName("""D:""").InvokeVerb("""Eject""")')
-    #print(driveCheckerSetup())
-    hwid = str(subprocess.check_output(
-    'wmic csproduct get uuid')).split('\\r\\n')[1].strip('\\r').strip()
-    print(hwid)
+    disk = "D:"
+    dbName = "sql.db"
+    print(driveCheckerSetup(dbName))
