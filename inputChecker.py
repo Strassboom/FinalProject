@@ -100,7 +100,6 @@ def driveCheckerLoop(conn,cur_dir,listDrives,driveEject):
 def driveCheckerHalt(conn,drives,cur_dir,driveEject):
 
     for drive in drives:
-        #if drive.drive_type == 'Removable Disk':
         print(drive)
         if dbOperations.findDrive(conn,drive):
             if os.path.exists(f"{drive}\\driveAuth.txt") is False:
