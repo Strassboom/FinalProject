@@ -1,7 +1,7 @@
 import os
 import subprocess
 import json
-from sys import platform
+from sys import platform, argv
 import dbOperations
 
 def listWindowsDrives():
@@ -108,9 +108,9 @@ def linuxRunProcess(process,driveAddr,linuxPassword):
         command = f'echo {linuxPassword} | sudo -S {" ".join(commandSplit[0:-1])} {driveAddr+commandSplit[-1]}'
         subprocess.run(command, shell=True)
 
-def driveCheckerSetup(dbName):
+def driveCheckerSetup(dbName,authPassword=''):
     cur_dir = os.path.abspath(".")
-    conn = dbOperations.initDB(dbName)
+    conn = dbOperations.initDB(dbName,authPassword)
     linuxPassword = None
     if platform == 'win32':
         authFileExists = windowsAuthFileExists
@@ -192,4 +192,6 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFi
 
 if __name__ == '__main__':
     dbName = "sql.db"
+    if len(argv) > 1:
+        driveCheckerSetup(dbName,argv[1])
     driveCheckerSetup(dbName)

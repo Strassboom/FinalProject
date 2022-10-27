@@ -4,14 +4,16 @@ from datetime import datetime
 import base64
 
 # Initializes connection and tables of db, or creates db if it doesn't exist
-def initDB(dbName):
+def initDB(dbName,authPassword=''):
     conn = createConnection(dbName)
     print("DB Created")
     initTables(conn)
-    authPassword = "bubblegum"
     if findDrive(conn,'ADMIN') is False:
         dtnow = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
         conn.execute(f""" INSERT INTO Authkeys (Name,key,registeredDateTime) VALUES ('ADMIN','{authPassword}','{dtnow}');""")
+    elif authPassword != '' and getAdminPassword(conn) != authPassword:
+        dtnow = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
+        conn.execute(f""" UPDATE Authkeys SET key = '{authPassword}', registeredDateTime = '{dtnow}' WHERE Name = 'ADMIN';""")
     return conn
 
 # Creates connection to sql database of name dbName
