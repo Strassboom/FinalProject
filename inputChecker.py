@@ -2,23 +2,9 @@ import os
 import subprocess
 import json
 from sys import platform
-from dataclasses import dataclass
-from typing import Callable, List
-from time import sleep
 import dbOperations
 
-
-@dataclass
-class Drive:
-    letter: str
-    label: str
-    drive_type: str
-
-    @property
-    def is_removable(self):
-        return self.drive_type == 'Removable Disk'
-
-def listWindowsDrives() -> List[Drive]:
+def listWindowsDrives():
     """
     Get a list of drives using WMI
     :return: list of drives
@@ -50,7 +36,7 @@ def listWindowsDrives() -> List[Drive]:
 
     return [d['deviceid'] for d in devices if drive_types[d['drivetype']] == "Removable Disk"]
 
-def listLinuxDrives() -> List:
+def listLinuxDrives():
     """
     Get a list of drives using ls on the media mount
     :return: list of drive names
