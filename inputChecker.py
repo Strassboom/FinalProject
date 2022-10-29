@@ -1,7 +1,7 @@
 import os
 import subprocess
 import json
-from sys import platform, argv
+from sys import platform, argv, exit
 import dbOperations
 
 def listWindowsDrives():
@@ -122,6 +122,8 @@ def driveCheckerSetup(dbName,authPassword=''):
         driveEject = windowsDriveEject
         listDrives = listWindowsDrives
         slash = "\\"
+        drives = listDrives()
+        driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
     elif platform == 'linux':
         authFileExists = linuxAuthFileExists
         readAuth = linuxReadAuth
@@ -133,7 +135,7 @@ def driveCheckerSetup(dbName,authPassword=''):
         listDrives = listLinuxDrives
         slash = "/"
         linuxPassword = input("Enter sudo password for Linux Ejection: ")
-    driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+        driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
 def driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
     drives = listDrives()
@@ -189,6 +191,7 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFi
         driveEject(drive,linuxPassword)
         print(f"Drive {drive} successfully ejected!")
     conn.commit()
+    exit("Goodbye!")
 
 if __name__ == '__main__':
     dbName = "sql.db"
