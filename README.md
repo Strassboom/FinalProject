@@ -6,7 +6,7 @@ This is my final project for CIS-573
 
 ### Development (Devs Only)
 #### Both Listed Platforms
-1. Make sure your flash
+1. Ensure a file exists on your flash drive in the root named processes.txt (i.e. D:\\processes.txt)  
 #### (Windows)
 1. Install Python=>3.10.4
 2. Install pyinstaller with pip  
@@ -47,8 +47,4 @@ This is my final project for CIS-573
     `sudo apt install libc-bin`
 6. Run PyInstaller command to build your current directory, making an executable from argument [1]   
     For Linux if the file you want to run is inputChecker.py (it is):  
-    `python3 -m PyInstaller main.py`  
-
-### Flash Drive Setup
-#### (Windows and Linux)
-1. Ensure a file exists on the flash drive in the root named processes.txt (i.e. D:\\processes.txt)
+    `python3 -m PyInstaller main.py`
