@@ -5,14 +5,37 @@ This is my final project for CIS-573
 #### (Platform)
 
 ### Development (Devs Only)
+#### Both Listed Platforms
+1. Make sure your flash
 #### (Windows)
 1. Install Python=>3.10.4
 2. Install pyinstaller with pip
-    python -m pip install pyinstaller
+    `python -m pip install pyinstaller`
 3. Run pyInstaller command to build your current directory, making an executable from argument [1]
-    {::comment}For Windows if the file you want to run is main.py{:/comment}
-    pyInstaller main.py
-#### (Linux)
+    {::comment}For Windows if the file you want to run is main.py (mine was called inputChecker.py){:/comment}
+    `pyInstaller main.py`
+4. Go to Control Panel, and search AutoPlay in the top-right searchbar.
+5. Select AutoPlay, navigate to "Removable Drives" and select "Take no action".
+6. Click Save in the bottom-right and close the window.
+7. Change the "C:\YourPath\TotheExecutable\executable.exe" in the tag
+    ```xml
+    <Arguments>/c "C:\YourPath\TotheExecutable\executable.exe" adminPassword</Arguments>
+    ```
+    to the path to your executable include the filename and extension, and "adminPassword" to your preferred adminPassword,
+    Additionally, change the C:\YourPath\TotheExecutable in the tag
+    ```xml
+    <WorkingDirectory>C:\YourPath\TotheExecutable</WorkingDirectory>
+    ```
+    to point towards the executable you wish to the current working directory of the executable you wish to run.
+##### Option 1 (Task Scheduler GUI)
+8. Import the Task Scheduler Task "runInputChecker.xml" into Task Scheduler.
+##### Option 2 (Powershell)
+8. Change the name of "runInputChecker.xml" to whatever you want (optional).
+9. Run the command
+    `schtasks.exe /Create /XML C:\task.xml /tn "Event Viewer Tasks\taskname"`
+    in Powershell, where task.xml is the path to the former "runInputChecker.xml" file with its new name instead, if changed, and where taskname is the name you wish to have for the task. After which, your task should be viewable in the Task SCheduler Folder "Event Viewer Tasks".
+
+#### (Linux) UNFINISHED
 1. Install Python=>3.10.4
 2. Install pip
     sudo apt install python3-pip
@@ -26,14 +49,6 @@ This is my final project for CIS-573
     {::comment}For Linux if the file you want to run is main.py{:/comment}
     python3 -m PyInstaller main.py
 
-### Execution
-#### (Windows)
-1. Go to the directory where your executable program was created (usually somwhere in the directory of your project, if you are a dev i.e. /dist/main/ if your python file was called main.py)
-2. Enter the command below in the terminal, allowing for new db admin password if one wishes to change it
-    {::comment}For Windows if the file you want to run is called main.exe and one wishes to change the admin password to blueberry{:/comment}
-    main.exe blueberry
-#### (Linux)
-1. Go to the directory where your executable program was created (usually somewhere in the directory of your project, if you are a dev i.e. ./dist/main/ if your python file was called main.py)
-2. Enter the command below in the terminal, allowing for new db admin password if one wishes to change it
-    {::comment}For Linux if the file you want to run is called main and one wishes to change the admin password to blueberry{:/comment}
-    ./main blueberry
+### Flash Drive Setup
+#### (Windows and Linux)
+1. Ensure a file exists on the flash drive in the root named processes.txt (i.e. D:\\processes.txt)

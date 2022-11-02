@@ -9,8 +9,9 @@ def initDB(dbName,authPassword=''):
     print("DB Created")
     initTables(conn)
     if findDrive(conn,'ADMIN') is False:
+        if authPassword == '':
+            authPassword = 'adminPassword'
         dtnow = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
-        authPassword = 'progress'
         conn.execute(f""" INSERT INTO Authkeys (Name,key,registeredDateTime) VALUES ('ADMIN','{authPassword}','{dtnow}');""")
     elif authPassword != '' and getAdminPassword(conn) != authPassword:
         dtnow = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
