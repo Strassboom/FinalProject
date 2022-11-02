@@ -9,11 +9,11 @@ This is my final project for CIS-573
 1. Make sure your flash
 #### (Windows)
 1. Install Python=>3.10.4
-2. Install pyinstaller with pip
-    `python -m pip install pyinstaller`
+2. Install pyinstaller with pip  
+    `python -m pip install pyinstaller`  
 3. Run pyInstaller command to build your current directory, making an executable from argument [1]  
-    For Windows if the file you want to run is main.py (mine was called inputChecker.py)  
-    `pyInstaller main.py`
+    For Windows if the file you want to run is inputChecker.py (it is):  
+    `pyInstaller inputChecker.py`
 4. Go to Control Panel, and search AutoPlay in the top-right searchbar.
 5. Select AutoPlay, navigate to "Removable Drives" and select "Take no action".
 6. Click Save in the bottom-right and close the window.
@@ -31,23 +31,23 @@ This is my final project for CIS-573
 8. Import the Task Scheduler Task "runInputChecker.xml" into Task Scheduler.
 ##### Option 2 (Powershell)
 8. Change the name of "runInputChecker.xml" to whatever you want (optional).
-9. Run the command
-    `schtasks.exe /Create /XML C:\task.xml /tn "Event Viewer Tasks\taskname"`
+9. Run the command:  
+    `schtasks.exe /Create /XML C:\task.xml /tn "Event Viewer Tasks\taskname"`  
     in Powershell, where task.xml is the path to the former "runInputChecker.xml" file with its new name instead, if changed, and where taskname is the name you wish to have for the task. After which, your task should be viewable in the Task SCheduler Folder "Event Viewer Tasks".
 
 #### (Linux) UNFINISHED
 1. Install Python=>3.10.4
-2. Install pip
-    sudo apt install python3-pip
-3. Install pyinstaller
-    pip3 install pyinstaller
-4. Install bin-utils
-    sudo apt install binutils
-5. Install libc-bin
-    sudo apt install libc-bin
-6. Run PyInstaller command to build your current directory, making an executable from argument [1]  
-    For Linux if the file you want to run is main.py
-    `python3 -m PyInstaller main.py`
+2. Install pip  
+    `sudo apt install python3-pip`
+3. Install pyinstaller  
+    `pip3 install pyinstaller`
+4. Install bin-utils  
+    `sudo apt install binutils`
+5. Install libc-bin  
+    `sudo apt install libc-bin`
+6. Run PyInstaller command to build your current directory, making an executable from argument [1]   
+    For Linux if the file you want to run is inputChecker.py (it is):  
+    `python3 -m PyInstaller main.py`  
 
 ### Flash Drive Setup
 #### (Windows and Linux)
