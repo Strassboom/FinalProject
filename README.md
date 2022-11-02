@@ -11,8 +11,8 @@ This is my final project for CIS-573
 1. Install Python=>3.10.4
 2. Install pyinstaller with pip
     `python -m pip install pyinstaller`
-3. Run pyInstaller command to build your current directory, making an executable from argument [1]
-    `{::comment}For Windows if the file you want to run is main.py (mine was called inputChecker.py){:/comment}`
+3. Run pyInstaller command to build your current directory, making an executable from argument [1]  
+    For Windows if the file you want to run is main.py (mine was called inputChecker.py)  
     `pyInstaller main.py`
 4. Go to Control Panel, and search AutoPlay in the top-right searchbar.
 5. Select AutoPlay, navigate to "Removable Drives" and select "Take no action".
@@ -45,9 +45,9 @@ This is my final project for CIS-573
     sudo apt install binutils
 5. Install libc-bin
     sudo apt install libc-bin
-6. Run PyInstaller command to build your current directory, making an executable from argument [1]
-    {::comment}For Linux if the file you want to run is main.py{:/comment}
-    python3 -m PyInstaller main.py
+6. Run PyInstaller command to build your current directory, making an executable from argument [1]  
+    For Linux if the file you want to run is main.py
+    `python3 -m PyInstaller main.py`
 
 ### Flash Drive Setup
 #### (Windows and Linux)
