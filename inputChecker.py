@@ -134,7 +134,9 @@ def driveCheckerSetup(dbName,authPassword=''):
         driveEject = linuxDriveEject
         listDrives = listLinuxDrives
         slash = "/"
-        linuxPassword = input("Enter sudo password for Linux Ejection: ")
+        linuxPassword = authPassword
+        while linuxPassword == '' or linuxPassword.isspace():
+            linuxPassword = input("Enter sudo password for Linux Ejection: ")
         driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
 def driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
