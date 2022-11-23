@@ -33,7 +33,8 @@ def listWindowsDrives():
         5: 'Compact Disc',
         6: 'RAM Disk',
     }
-
+    if not isinstance(devices,list):
+        devices = [devices]
     return [d['deviceid'] for d in devices if drive_types[d['drivetype']] == "Removable Disk"]
 
 def listLinuxDrives():
