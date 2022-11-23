@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 from sys import platform, argv, exit
+from getpass import getpass
 import dbOperations
 
 def listWindowsDrives():
@@ -137,7 +138,7 @@ def driveCheckerSetup(dbName,authPassword=''):
         slash = "/"
         linuxPassword = authPassword
         while linuxPassword == '' or linuxPassword.isspace():
-            linuxPassword = input("Enter sudo password for Linux Ejection: ")
+            linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
         driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
 def driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
@@ -162,7 +163,7 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFi
             driveAddr = f'/media/{os.getlogin()}/{drive}{slash}'
         if dbOperations.findDrive(conn,drive):
             if authFileExists(driveAddr,linuxPassword) is False:
-                if dbOperations.adminAuth(conn,input("Auth File does not exist. Please enter the password to create your auth: ")):
+                if dbOperations.adminAuth(conn,getpass("Auth File does not exist. Please enter the password to create your auth: ")):
                     writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
                     print("Password correct! Auth Created! Re-insert flash drive to run again")
                 else:
@@ -178,13 +179,13 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFi
                         runProcess(process,driveAddr,linuxPassword)
                     print("All processes successfully run!")
                     changeDir(cur_dir,linuxPassword)
-                elif dbOperations.adminAuth(conn,input("Auth is invalid. Please enter the password to recover your auth: ")):
+                elif dbOperations.adminAuth(conn,getpass("Auth is invalid. Please enter the password to recover your auth: ")):
                     writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
                     print("Password correct! Re-insert flash drive to run again")
                 else:
                     print("Password invalid. Re-insert flash drive and try again")
         else:
-            if dbOperations.adminAuth(conn,input("Drive not found. Please enter the password to create your auth: ")):
+            if dbOperations.adminAuth(conn,getpass("Drive not found. Please enter the password to create your auth: ")):
                 dbOperations.insertDrive(conn,drive)
                 print("Password correct! Drive and auth added to database!")
                 writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
