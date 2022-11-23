@@ -1,7 +1,7 @@
-from getpass import getpass
 import sqlite3
 from datetime import datetime
-import base64
+import hashlib
+import secrets
 
 # Initializes connection and tables of db, or creates db if it doesn't exist
 def initDB(dbName,authPassword=''):
@@ -58,10 +58,10 @@ def authenticateDrive(conn, name, key):
         return False
 
 def createAuthKey(name, keyDT = datetime.now().strftime("%Y-%m-%d %I:%M:%S")):
-    keyUnEncoded = name + "_" + keyDT
-    encodedKey = keyUnEncoded.encode("ascii")
-    base64KeyBytes = base64.b64encode(encodedKey)
-    return base64KeyBytes.decode("ascii")
+    salt = secrets.token_hex(8)
+    unencodedAuthKey = name + keyDT + salt
+    encodedKey = hashlib.md5(unencodedAuthKey.encode()).hexdigest()
+    return encodedKey
 
 def getAuthKey(conn, name):
     return conn.execute(f""" SELECT key FROM Authkeys WHERE Name = '{name}';""").fetchone()[0]
