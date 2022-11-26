@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+from pathlib import Path
 from sys import platform, argv, exit
 from getpass import getpass
 import dbOperations
@@ -176,4 +177,7 @@ if __name__ == '__main__':
     dbName = "sql.db"
     if len(argv) > 2:
         driveCheckerSetup(dbName,argv[1],argv[2])
-    print("You must submit the path to the executable and the db password (your sudo pw if linux) to the executable file")
+    else:
+        print("You must submit the path to the executable and the db password (your sudo pw if linux) to the executable file")
+        for path in Path(".").rglob("holdFile"):
+            os.remove(path)
