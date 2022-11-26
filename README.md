@@ -52,12 +52,12 @@ This is my final project for CIS-573
 
 
 
-location="/path/to/FinalProject"; nohup watch $location/linuxFindDrives.sh $location executable sudoPassword >/dev/null 2>/dev/null & echo $! > "$location/file_to_save_pid_to.txt" ; line=$(head -n 1 "$location/file_to_save_pid_to.txt") ; disown -h $line
+location="/path/to/FinalProject"; nohup watch -n seconds $location/linuxFindDrives.sh $location executable sudoPassword >/dev/null 2>/dev/null & echo $! > "$location/file_to_save_pid_to.txt" ; line=$(head -n 1 "$location/file_to_save_pid_to.txt") ; disown -h $line
 
-where /path/to/FinalProject is the path to the FinalProject directory (INCLUDING FinalProject), executable is the name of the executable (usually inputChecker), sudoPassword is your sudo Password, and file_to_save_pid_to.txt is the filename you want the program's process id saved to.
+where /path/to/FinalProject is the path to the FinalProject directory (INCLUDING FinalProject), seconds is the number of seconds after which you would like to repeatedly check again for flash drives, executable is the name of the executable (usually inputChecker), sudoPassword is your sudo Password, and file_to_save_pid_to.txt is the filename you want the program's process id saved to.
 EXAMPLE: 
 
-location="/home/strassboom/Documents/FinalProject"; nohup watch $location/linuxFindDrives.sh $location inputChecker Honda#1954 >/dev/null 2>/dev/null & echo $! > "$location/kill_me.txt" ; line=$(head -n 1 "$location/kill_me.txt") ; disown -h $line
+location="/home/strassboom/Documents/FinalProject"; nohup watch -n 10 $location/linuxFindDrives.sh $location inputChecker Honda#1954 >/dev/null 2>/dev/null & echo $! > "$location/kill_me.txt" ; line=$(head -n 1 "$location/kill_me.txt") ; disown -h $line
 
 8. Memorize where file_to_save_pid_to.txt is, or the integer printed to the terminal after the command is finished running.
 9. Close the terminal window with the x button.
@@ -70,3 +70,4 @@ location="/home/strassboom/Documents/FinalProject"; nohup watch $location/linuxF
 #### (Linux)
 1. I you would like to just kill the entire program, open a terminal window, and type the command "kill x" where x is the process id you saved earlier that was printed in the earlier terminal window.
 2. To delete the program you may simply delete the folder where FinalProject is saved, and perform step 1 if you have not already.
+3. If you are unsure if there are more instances of the watch command running, display all process in the terminal with the command "ps -ef".
