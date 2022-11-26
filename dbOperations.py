@@ -1,7 +1,6 @@
 import sqlite3
 from datetime import datetime
 import hashlib
-import secrets
 
 # Initializes connection and tables of db, or creates db if it doesn't exist
 def initDB(dbName,authPassword=''):
@@ -42,49 +41,46 @@ def initTables(conn):
             continue
     print("All Tables created!")
 
-# Searches Authkeys database for currently plugged in drive
+# Searches Authkeys database for currently plugged in drive of name name
 def findDrive(conn, name):
     drive = conn.execute(f""" SELECT * from Authkeys WHERE Name = '{name}';""").fetchone()
     if drive:
         return True
     return False
 
-# Authenticate Drive
-def authenticateDrive(conn, name, key):
+# Authenticate Drive of name name and with key key
+def authenticateDrive(conn, name, hashInput):
+    key = createAuthKey(name, hashInput)
     auth = conn.execute(f""" SELECT * from Authkeys WHERE Name = '{name}' and key = '{key}'""").fetchone()
     if auth:
         return True
     else:
         return False
 
-def createAuthKey(name, keyDT = datetime.now().strftime("%Y-%m-%d %I:%M:%S")):
-    salt = secrets.token_hex(8)
-    unencodedAuthKey = name + keyDT + salt
-    encodedKey = hashlib.md5(unencodedAuthKey.encode()).hexdigest()
+# Create Auth Key for drive of name name
+def createAuthKey(name, hashInput):
+    unencodedKey = name + hashInput
+    encodedKey = hashlib.md5(unencodedKey.encode()).hexdigest()
     return encodedKey
 
-def getAuthKey(conn, name):
-    return conn.execute(f""" SELECT key FROM Authkeys WHERE Name = '{name}';""").fetchone()[0]
+# Updates Existing Drive in AuthKeys table if password correct
+def updateDrive(conn, name, hashInput):
+    keyDT = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
+    key = createAuthKey(name, hashInput)
+    conn.execute(f""" UPDATE Authkeys SET key = '{key}', registeredDateTime = '{keyDT}' WHERE name = '{name}';""")
 
 # Adds Drive to AuthKeys table if password correct
-def insertDrive(conn, name, keyDT = datetime.now().strftime("%Y-%m-%d %I:%M:%S")):
-    key = createAuthKey(name, keyDT)
+def insertDrive(conn, name, hashInput):
+    keyDT = datetime.now().strftime("%Y-%m-%d %I:%M:%S")
+    key = createAuthKey(name, hashInput)
     conn.execute(f""" INSERT INTO Authkeys (Name,key,registeredDateTime) VALUES ('{name}','{key}','{keyDT}');""")
-    return key
 
+# Retrieve Admin Password
 def getAdminPassword(conn):
     authPassword = conn.execute(f""" SELECT key from Authkeys WHERE Name = 'ADMIN'""").fetchone()[0]
     return authPassword
 
+# Check input against Admin Password
 def adminAuth(conn,password):
     findDrive(conn,'ADMIN')
     return getAdminPassword(conn) == password
-
-def getAllAuthKeys(conn):
-    return conn.execute(f""" SELECT * FROM Authkeys;""").fetchall()
-
-# dbName = "sql.db"
-# conn = initDB(dbName)
-# print(conn.execute(f""" SELECT * FROM Authkeys;""").fetchall())
-#print(findDrive(conn,"D:"))
-#adminAuth(initDB(dbName),"bubblegum")

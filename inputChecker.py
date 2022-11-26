@@ -59,31 +59,15 @@ def windowsDriveEject(driveName,linuxPassword):
 def linuxDriveEject(driveName,linuxPassword):
     os.system(f'echo {linuxPassword} | sudo -S eject /media/{os.getlogin()}/{driveName}')
 
-def windowsWriteToFile(fileAddr,text):
-    with open(fileAddr,"w+") as driveAuth:
-        driveAuth.write(text)
+def getSize(filePath):
+    return os.path.getsize(filePath)
 
-def linuxWriteToFile(fileAddr,text):
-    os.system(f'echo "{text}" > {fileAddr}')
-
-def windowsAuthFileExists(driveAddr,linuxPassword):
-    return os.path.exists(f"{driveAddr}driveAuth.txt")
-
-def linuxAuthFileExists(driveAddr,linuxPassword):
-    command = f'echo {linuxPassword} | sudo -S ls {driveAddr[:-1]}'
-    proc = subprocess.check_output(command, text=True, shell=True)
-    if 'driveAuth.txt' in proc.split("\n"):
-        return True
-    return False
-
-def windowsReadAuth(driveAddr,linuxPassword):
-    with open(f"{driveAddr}driveAuth.txt","r") as driveAuth:
-        return driveAuth.readlines()[0]
-
-def linuxReadAuth(driveAddr,linuxPassword):
-    command = f'echo {linuxPassword} | sudo -S cat {driveAddr}driveAuth.txt'
-    proc = subprocess.check_output(command, text=True, shell=True)
-    return proc.strip('\n')
+def createHashInput(rootDir):
+    sizeString = ""
+    for subdir, dirs, files in os.walk(rootDir):
+        for file in files:
+            sizeString += str(getSize(os.path.join(subdir,file)))
+    return sizeString
     
 def windowsGetProcessList(driveAddr,linuxPassword):
     with open(f"{driveAddr}processes.txt","r") as executor:
@@ -115,9 +99,6 @@ def driveCheckerSetup(dbName,authPassword=''):
     conn = dbOperations.initDB(dbName,authPassword)
     linuxPassword = None
     if platform == 'win32':
-        authFileExists = windowsAuthFileExists
-        readAuth = windowsReadAuth
-        writeToFile = windowsWriteToFile
         changeDir = windowsChangeDir
         getProcessList = windowsGetProcessList
         runProcess = windowsRunProcess
@@ -125,23 +106,22 @@ def driveCheckerSetup(dbName,authPassword=''):
         listDrives = listWindowsDrives
         slash = "\\"
         drives = listDrives()
-        driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+        driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
     elif platform == 'linux':
-        authFileExists = linuxAuthFileExists
-        readAuth = linuxReadAuth
-        writeToFile = linuxWriteToFile
         changeDir = linuxChangeDir
         getProcessList = linuxGetProcessList
         runProcess = linuxRunProcess
         driveEject = linuxDriveEject
         listDrives = listLinuxDrives
         slash = "/"
+        drives = listDrives()
         linuxPassword = authPassword
         while linuxPassword == '' or linuxPassword.isspace():
             linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
-        driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+        # driveCheckerLoop(conn,cur_dir,listDrives,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+        driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
-def driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
+def driveCheckerLoop(conn,cur_dir,listDrives,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
     drives = listDrives()
     oldDriveCount = len(drives)
     newDriveCount = oldDriveCount
@@ -151,45 +131,41 @@ def driveCheckerLoop(conn,cur_dir,listDrives,slash,authFileExists,readAuth,write
             oldDriveCount = newDriveCount
             newDriveCount = len(drives)
         print("New Drive Detected!")
-        driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+        driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         oldDriveCount = newDriveCount
 
-def driveCheckerHalt(conn,drives,cur_dir,slash,authFileExists,readAuth,writeToFile,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
+# When a new drive is detected (whetehr event based or in a while loop with driveCheckerLoop)
+# This method is called to operate on said Removable Disks
+def driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
     for drive in drives:
         if slash == "\\":
             driveAddr = drive+slash
         elif slash == "/":
             drive = f'"{drive}"'
             driveAddr = f'/media/{os.getlogin()}/{drive}{slash}'
+        hashInput = createHashInput(driveAddr)
+        # If the Drive is found in the database
         if dbOperations.findDrive(conn,drive):
-            if authFileExists(driveAddr,linuxPassword) is False:
-                if dbOperations.adminAuth(conn,getpass("Auth File does not exist. Please enter the password to create your auth: ")):
-                    writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
-                    print("Password correct! Auth Created! Re-insert flash drive to run again")
-                else:
-                    print("Password invalid. Re-insert flash drive and try again")
+            # If the Drive is authenticated, run all of the processes
+            if dbOperations.authenticateDrive(conn,drive,hashInput):
+                print("Drive authenticated! Beginning drive processes:")
+                changeDir(driveAddr,linuxPassword)
+                processes = getProcessList(driveAddr,linuxPassword)
+                for process in processes:
+                    print(process)
+                    runProcess(process,driveAddr,linuxPassword)
+                print("All processes successfully run!")
+                changeDir(cur_dir,linuxPassword)
             else:
-                driveAuth = readAuth(driveAddr,linuxPassword)
-                if dbOperations.authenticateDrive(conn,drive,driveAuth):
-                    print("Drive authenticated! Beginning drive processes:")
-                    changeDir(driveAddr,linuxPassword)
-                    processes = getProcessList(driveAddr,linuxPassword)
-                    for process in processes:
-                        print(process)
-                        runProcess(process,driveAddr,linuxPassword)
-                    print("All processes successfully run!")
-                    changeDir(cur_dir,linuxPassword)
-                elif dbOperations.adminAuth(conn,getpass("Auth is invalid. Please enter the password to recover your auth: ")):
-                    writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
-                    print("Password correct! Re-insert flash drive to run again")
+                if dbOperations.adminAuth(conn,getpass("Drive not authenticated. Please enter the password to create your Auth: ")):
+                    dbOperations.updateDrive(conn,drive,hashInput)
+                    print("Password correct! Auth Updated! Re-insert flash drive to run again")
                 else:
                     print("Password invalid. Re-insert flash drive and try again")
         else:
-            if dbOperations.adminAuth(conn,getpass("Drive not found. Please enter the password to create your auth: ")):
-                dbOperations.insertDrive(conn,drive)
-                print("Password correct! Drive and auth added to database!")
-                writeToFile(driveAddr+"driveAuth.txt",dbOperations.getAuthKey(conn,drive))
-                print("Auth added to Drive! Re-insert flash drive to run again")
+            if dbOperations.adminAuth(conn,getpass("Drive not found. Please enter the password to create your Auth: ")):
+                dbOperations.insertDrive(conn,drive,hashInput)
+                print("Password correct! Drive and Auth updated! Re-insert flash drive to run again!")
             else:
                 print("Password invalid. Re-insert flash drive and try again")
         driveEject(drive,linuxPassword)
