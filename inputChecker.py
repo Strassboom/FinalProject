@@ -57,7 +57,7 @@ def windowsDriveEject(driveName,linuxPassword):
     os.system(f'powershell (New-Object -comObject Shell.Application).Namespace(17).ParseName("""{driveName}""").InvokeVerb("""Eject""")')
 
 def linuxDriveEject(driveName,linuxPassword):
-    os.system(f'echo {linuxPassword} | sudo -S eject /media/{os.getlogin()}/{driveName}')
+    os.system(f'echo {linuxPassword} | sudo -S 2>/dev/null eject /media/{os.getlogin()}/{driveName}')
 
 def getSize(filePath):
     return os.path.getsize(filePath)
@@ -74,7 +74,7 @@ def windowsGetProcessList(driveAddr,linuxPassword):
         return [e for e in executor.readlines() if len(e) > 0]
 
 def linuxGetProcessList(driveAddr, linuxPassword):
-    command = f'echo {linuxPassword} | sudo -S cat {driveAddr}processes.txt'
+    command = f'echo {linuxPassword} | sudo -S 2>/dev/null cat {driveAddr}processes.txt'
     proc = subprocess.check_output(command, text=True, shell=True)
     return [p for p in proc.split('\n') if len(p) > 0]
 
@@ -91,13 +91,13 @@ def windowsRunProcess(process,driveAddr,linuxPassword):
 def linuxRunProcess(process,driveAddr,linuxPassword):
     commandSplit = process.split(" ")
     if "sudo" not in process:
-        command = f'echo {linuxPassword} | sudo -S {" ".join(commandSplit[0:-1])} {driveAddr+commandSplit[-1]}'
+        command = f'echo {linuxPassword} | sudo -S 2>/dev/null {" ".join(commandSplit[0:-1])} {driveAddr+commandSplit[-1]}'
         subprocess.run(command, shell=True)
 
-def driveCheckerSetup(dbName,authPassword=''):
-    cur_dir = os.path.abspath(".")
-    conn = dbOperations.initDB(dbName,authPassword)
-    linuxPassword = None
+def driveCheckerSetup(dbName,cur_dir,authPassword=''):
+    print(cur_dir)
+    conn = dbOperations.initDB(os.path.join(cur_dir,dbName),authPassword)
+    linuxPassword = authPassword
     if platform == 'win32':
         changeDir = windowsChangeDir
         getProcessList = windowsGetProcessList
@@ -116,8 +116,9 @@ def driveCheckerSetup(dbName,authPassword=''):
         slash = "/"
         drives = listDrives()
         linuxPassword = authPassword
-        while linuxPassword == '' or linuxPassword.isspace():
-            linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
+        #linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
+        #while linuxPassword == '' or linuxPassword.isspace():
+            #linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
         # driveCheckerLoop(conn,cur_dir,listDrives,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
@@ -171,10 +172,13 @@ def driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProc
         driveEject(drive,linuxPassword)
         print(f"Drive {drive} successfully ejected!")
     conn.commit()
+    if (slash == "/"):
+        os.remove(os.path.join(cur_dir,"holdFile"))
     exit("Goodbye!")
+    
 
 if __name__ == '__main__':
     dbName = "sql.db"
-    if len(argv) > 1:
-        driveCheckerSetup(dbName,argv[1])
-    driveCheckerSetup(dbName)
+    if len(argv) > 2:
+        driveCheckerSetup(dbName,argv[1],argv[2])
+    print("You must submit the path to the executable and the db password (your sudo pw if linux) to the executable file")

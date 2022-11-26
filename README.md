@@ -17,9 +17,9 @@ This is my final project for CIS-573
 4. Go to Control Panel, and search AutoPlay in the top-right searchbar.
 5. Select AutoPlay, navigate to "Removable Drives" and select "Take no action".
 6. Click Save in the bottom-right and close the window.
-7. Change the "C:\YourPath\TotheExecutable\executable.exe" in the tag
+7. Change the "C:\YourPath\TotheExecutable\executable.exe" and "C:\YourPath\TotheExecutable" in the tag
     ```xml
-    <Arguments>/c "C:\YourPath\TotheExecutable\executable.exe" adminPassword</Arguments>
+    <Arguments>/c "C:\YourPath\TotheExecutable\executable.exe" "C:\YourPath\TotheExecutable" adminPassword</Arguments>
     ```
     to the path to your executable (including the filename and extension), and change "adminPassword" to your preferred adminPassword.
     Additionally, change the C:\YourPath\TotheExecutable in the tag
@@ -35,7 +35,7 @@ This is my final project for CIS-573
     `schtasks.exe /Create /XML C:\runInputChecker.xml /tn "Event Viewer Tasks\taskname"`  
     in Powershell, where "runInputChecker.xml" is used to detect the usb flash drive insert event, and where taskname is the name you wish to have for the task. After which, your task should be viewable in the Task Scheduler folder "Event Viewer Tasks".
 
-#### (Linux) UNFINISHED
+#### (Linux)
 1. Install Python=>3.10.4
 2. Install pip  
     `sudo apt install python3-pip`
@@ -48,3 +48,25 @@ This is my final project for CIS-573
 6. Run PyInstaller command to build your current directory, making an executable from argument [1]   
     For Linux if the file you want to run is inputChecker.py (it is):  
     `python3 -m PyInstaller main.py`
+7. Run the command:
+
+
+
+location="/path/to/FinalProject"; nohup watch $location/linuxFindDrives.sh $location executable sudoPassword >/dev/null 2>/dev/null & echo $! > "$location/file_to_save_pid_to.txt" ; line=$(head -n 1 "$location/file_to_save_pid_to.txt") ; disown -h $line
+
+where /path/to/FinalProject is the path to the FinalProject directory (INCLUDING FinalProject), executable is the name of the executable (usually inputChecker), sudoPassword is your sudo Password, and file_to_save_pid_to.txt is the filename you want the program's process id saved to.
+EXAMPLE: 
+
+location="/home/strassboom/Documents/FinalProject"; nohup watch $location/linuxFindDrives.sh $location inputChecker Honda#1954 >/dev/null 2>/dev/null & echo $! > "$location/kill_me.txt" ; line=$(head -n 1 "$location/kill_me.txt") ; disown -h $line
+
+8. Memorize where file_to_save_pid_to.txt is, or the integer printed to the terminal after the command is finished running.
+9. Close the terminal window with the x button.
+10. You are Done.
+
+### Stopping the Program
+#### (Windows)
+1. Go to task Scheduler, and right click the task, and click disable task. To delete the program you may simply delete the folder where FinalProject is saved, and the task in Task Scheduler you created.
+
+#### (Linux)
+1. I you would like to just kill the entire program, open a terminal window, and type the command "kill x" where x is the process id you saved earlier that was printed in the earlier terminal window.
+2. To delete the program you may simply delete the folder where FinalProject is saved, and perform step 1 if you have not already.
