@@ -17,22 +17,25 @@ This is my final project for CIS-573
 4. Go to Control Panel, and search AutoPlay in the top-right searchbar.
 5. Select AutoPlay, navigate to "Removable Drives" and select "Take no action".
 6. Click Save in the bottom-right and close the window.
-7. Change the "C:\YourPath\TotheExecutable\executable.exe" and "C:\YourPath\TotheExecutable" in the tag
+7. Change the `C:\RelativePath\TotheExecutable\executable.exe and "C:\FullPath\TotheExecutableFolder" and "adminPassword" in the tag
     ```xml
-    <Arguments>/c "C:\YourPath\TotheExecutable\executable.exe" "C:\YourPath\TotheExecutable" adminPassword</Arguments>
+    <Arguments>/c ""C:\RelativePath\TotheExecutableFolder\executable.exe" "C:\FullPath\TotheExecutableFolder" "adminPassword""</Arguments>
     ```
-    to the path to your executable (including the filename and extension), and change "adminPassword" to your preferred adminPassword.
-    Additionally, change the C:\YourPath\TotheExecutable in the tag
+    to the relative path to your executable
+    (if the WorkingDirectory tag is set to the directory containing executable.exe you can set the first argument ("C:\RelativePath...") to just the name of the `executable.exe` example: runInputChecker.exe), and change `adminPassword` to your preferred adminPassword.
+    The FullPath argument must be the full path from the drive name up to and including the directory containing the executable being run.
     ```xml
-    <WorkingDirectory>C:\YourPath\TotheExecutable</WorkingDirectory>
+    <WorkingDirectory>C:\FullPath\TotheExecutableFolder</WorkingDirectory>
     ```
     to point towards the directory of the executable you wish to run.
+    The value of WorkingDirectory must NOT have quotes.
 ##### Option 1 (Task Scheduler GUI)
 8. Import the Task Scheduler Task "runInputChecker.xml" into Task Scheduler.
 ##### Option 2 (Powershell)
-8. Change the name of "runInputChecker.xml" to whatever you want (optional).
-9. Run the command:  
-    `schtasks.exe /Create /XML C:\runInputChecker.xml /tn "Event Viewer Tasks\taskname"`  
+9. Open cmd
+10. cd to the directory where runInputChecker.xml is stored
+11. Run the command:  
+    `schtasks.exe /Create /XML runInputChecker.xml /tn "Event Viewer Tasks\taskname"`  
     in Powershell, where "runInputChecker.xml" is used to detect the usb flash drive insert event, and where taskname is the name you wish to have for the task. After which, your task should be viewable in the Task Scheduler folder "Event Viewer Tasks".
 
 #### (Linux)
@@ -52,12 +55,12 @@ This is my final project for CIS-573
 
 
 
-location="/path/to/FinalProject"; nohup watch -n seconds $location/linuxFindDrives.sh $location executable sudoPassword >/dev/null 2>/dev/null & echo $! > "$location/file_to_save_pid_to.txt" ; line=$(head -n 1 "$location/file_to_save_pid_to.txt") ; disown -h $line
+`location="/path/to/FinalProject"; nohup watch -n seconds $location/linuxFindDrives.sh $location executable sudoPassword >/dev/null 2>/dev/null & echo $! > "$location/file_to_save_pid_to.txt" ; line=$(head -n 1 "$location/file_to_save_pid_to.txt") ; disown -h $line`
 
 where /path/to/FinalProject is the path to the FinalProject directory (INCLUDING FinalProject), seconds is the number of seconds after which you would like to repeatedly check again for flash drives, executable is the name of the executable (usually inputChecker), sudoPassword is your sudo Password, and file_to_save_pid_to.txt is the filename you want the program's process id saved to.
 EXAMPLE: 
 
-location="/home/strassboom/Documents/FinalProject"; nohup watch -n 10 $location/linuxFindDrives.sh $location inputChecker Honda#1954 >/dev/null 2>/dev/null & echo $! > "$location/kill_me.txt" ; line=$(head -n 1 "$location/kill_me.txt") ; disown -h $line
+`location="/home/strassboom/Documents/FinalProject"; nohup watch -n 10 $location/linuxFindDrives.sh $location inputChecker Honda#1954 >/dev/null 2>/dev/null & echo $! > "$location/kill_me.txt" ; line=$(head -n 1 "$location/kill_me.txt") ; disown -h $line`
 
 8. Memorize where file_to_save_pid_to.txt is, or the integer printed to the terminal after the command is finished running.
 9. Close the terminal window with the x button.
@@ -70,4 +73,4 @@ location="/home/strassboom/Documents/FinalProject"; nohup watch -n 10 $location/
 #### (Linux)
 1. I you would like to just kill the entire program, open a terminal window, and type the command "kill x" where x is the process id you saved earlier that was printed in the earlier terminal window.
 2. To delete the program you may simply delete the folder where FinalProject is saved, and perform step 1 if you have not already.
-3. If you are unsure if there are more instances of the watch command running, display all process in the terminal with the command "ps -ef".
+3. If you are unsure if there are more instances of the watch command running, display all process in the terminal with the command `ps -ef`.
