@@ -106,7 +106,6 @@ def driveCheckerSetup(dbName,cur_dir,authPassword=''):
         listDrives = listWindowsDrives
         slash = "\\"
         drives = listDrives()
-        driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
     elif platform == 'linux':
         changeDir = linuxChangeDir
         getProcessList = linuxGetProcessList
@@ -116,11 +115,7 @@ def driveCheckerSetup(dbName,cur_dir,authPassword=''):
         slash = "/"
         drives = listDrives()
         linuxPassword = authPassword
-        #linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
-        #while linuxPassword == '' or linuxPassword.isspace():
-            #linuxPassword = getpass("Enter sudo password for Linux Ejection: ")
-        # driveCheckerLoop(conn,cur_dir,listDrives,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
-        driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
+    driveCheckerHalt(conn,drives,cur_dir,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword)
         
 def driveCheckerLoop(conn,cur_dir,listDrives,slash,createHashInput,changeDir,getProcessList,runProcess,driveEject,linuxPassword):
     drives = listDrives()
